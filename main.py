@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import docx
+from docx import Document
 import sys
 
 help = '''classusage v0.0.1
@@ -11,3 +11,7 @@ help = '''classusage v0.0.1
 if len(sys.argv) <= 1:
     print(help)
     exit()
+
+from docparser import DocLessonParser
+parser = DocLessonParser()
+print(parser.parse(sys.argv[1]))

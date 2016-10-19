@@ -1,4 +1,5 @@
 # classusage gitignore file
+__pycache__/
 
 # Below are generic gitignore files for this project.
 ### JetBrains ###
