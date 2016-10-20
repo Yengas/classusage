@@ -1,8 +1,7 @@
 import re
 
 class ClassRoom:
-    lesson_pattern = re.compile("^([A-Z])/([0-9])-([0-9])$")
-    predefined = {}
+    room_pattern = re.compile("^([A-Z])/([A-Z0-9])-([0-9])$")
 
     def __init__(self, floor, block, number, name=""):
         self.floor = floor
@@ -10,14 +9,9 @@ class ClassRoom:
         self.number = number
         self.name = name
 
-    @staticmethod
-    def parseText(text):
-        text = text.strip()
-        if text in ClassRoom.predefined:
-            return ClassRoom.predefined[text]
-
-        match = ClassRoom.lesson_pattern.match(text)
-        if match:
-            return ClassRoom(int(match.group(2)), match.group(1), (match.group(3)));
-
-        return None
+ClassRoom.predefined = {
+    "lab1": ClassRoom(None, None, None, "LAB1"),
+    "lab2": ClassRoom(None, None, None, "LAB2"),
+    "lab3": ClassRoom(None, None, None, "LAB3"),
+    "elektronik lab.": ClassRoom(None, None, None, "Elektronik Lab")
+}
