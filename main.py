@@ -2,6 +2,7 @@
 from docx import Document
 import sys
 import os
+from jsonserialize import deepSerialize
 
 help = '''classusage v0.0.1
    Please supply a docx file or a folder containing docx files to run this program.
@@ -15,6 +16,7 @@ if len(sys.argv) <= 1 or (not os.path.isfile(sys.argv[1]) and not os.path.isdir(
 
 from docparser import DocLessonParser
 
+# Calculate the list of documents to parse lessons from.
 files = []
 if os.path.isfile(sys.argv[1]):
     files = [ sys.argv[1] ]
@@ -24,13 +26,4 @@ else:
             files.append(os.path.join(dirname, filename))
 
 parser = DocLessonParser()
-
-for file in files:
-    print("#%s" % file)
-    lessons = parser.parse(file)
-
-    for lesson in lessons:
-        print(lesson)
-        print("----")
-
-    print(len(lessons))
+print(deepSerialize([lesson for file in files for lesson in parser.parse(file)]))

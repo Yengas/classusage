@@ -1,3 +1,4 @@
+from os.path import splitext, basename
 from lessonparser import LessonParser
 from lesson import Lesson, LessonTime
 from classroom import ClassRoom
@@ -7,7 +8,8 @@ import re
 class TableMeta:
     day_names = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
 
-    def __init__(self, row_index, days):
+    def __init__(self, department, row_index, days):
+        self.department = department
         self.row_index = row_index
         self.days = days
 
@@ -25,7 +27,7 @@ class StandartDocParser:
     text : string
         Block of text representing a cell of a table row.
     '''
-    def parseLesson(self, cell, time):
+    def parseLesson(self, cell, time, meta):
         if not cell.text.strip():
             return None
 
@@ -38,8 +40,12 @@ class StandartDocParser:
             room = self.getRoom(text)
             optional = self.getOptional(text)
 
+            if not title or not teacher:
+                continue
+
             result.append(
                 Lesson(
+                    meta.department,
                     title.group(3).strip(),
                     title.group(1).strip(),
                     title.group(2).strip(),
@@ -66,18 +72,18 @@ class StandartDocParser:
         if "(Bölüm Seç" in text:
             return 1
         # College wide selective
-        if "(Üniversite/" in text:
+        if "(Üniversite/" in text or "(Y.O." in text:
             return 2
         # Required
         return 0
 
-    def getMeta(self, document):
+    def getMeta(self, document, path):
         table = document.tables[0]
         start = 0
         while start < len(table.rows):
             if table.rows[start].cells[1].text.strip() in TableMeta.day_names:
                 days = list(map(lambda cell: TableMeta.day_names.index(cell.text.strip()), table.rows[start].cells[1:]))
-                return TableMeta(start, days);
+                return TableMeta(splitext(basename(path))[0].upper(), start, days);
             start += 1
         return None
 
@@ -93,7 +99,7 @@ class StandartDocParser:
         result = []
         # Parse lesson object for other cells
         for idx, cell in enumerate(row.cells[1:]):
-            lesson = self.parseLesson(cell, LessonTime(meta.days[idx], time[0], time[1]))
+            lesson = self.parseLesson(cell, LessonTime(meta.days[idx], time[0], time[1]), meta)
 
             if lesson:
                 result.extend(lesson);
@@ -125,7 +131,7 @@ class DocLessonParser(LessonParser):
 
         # Parse metadata and initialize the parsing.
         # meta contains info such as days.
-        meta = parser.getMeta(document);
+        meta = parser.getMeta(document, path);
         if meta is None:
             return None
 
